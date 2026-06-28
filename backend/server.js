@@ -31,6 +31,13 @@ app.get("/", (req, res) => {
 
 app.use("/api/tasks", taskRoutes);
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Server is running",
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({
     message: "Route not found",
