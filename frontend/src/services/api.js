@@ -1,10 +1,14 @@
 import axios from "axios";
-const baseURL = import.meta.env.VITE_API_URL;
-if (!baseURL) {
-  throw new Error("VITE_API_URL is not defined");
-}
+// const baseURL = import.meta.env.VITE_API_URL;
+// console.log("baseURL:", baseURL);
+// if (!baseURL) {
+//   throw new Error("VITE_API_URL is not defined");
+// }
 
-const API = axios.create({ baseURL });
+const API = axios.create({ 
+  baseURL: "https://colledge-connect-rx14.onrender.com/api/tasks",
+});
+console.log("baseURL:", baseURL);
 
 // Centralize error messages so every component gets a clean, readable
 // string instead of having to dig into err.response.data itself.
