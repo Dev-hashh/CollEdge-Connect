@@ -1,5 +1,9 @@
 import axios from "axios";
-const baseURL = "http://localhost:3000/api/tasks";
+const baseURL = import.meta.env.VITE_API_URL;
+if (!baseURL) {
+  throw new Error("VITE_API_URL is not defined");
+}
+
 const API = axios.create({ baseURL });
 
 // Centralize error messages so every component gets a clean, readable
