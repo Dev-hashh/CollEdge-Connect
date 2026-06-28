@@ -1,3 +1,5 @@
+import axios from "axios";
+const baseURL = "http://localhost:3000/api/tasks";
 const API = axios.create({ baseURL });
 
 // Centralize error messages so every component gets a clean, readable
