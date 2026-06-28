@@ -5,9 +5,8 @@ import axios from "axios";
 //   throw new Error("VITE_API_URL is not defined");
 // }
 
-const API = axios.create({ 
-  baseURL: "https://colledge-connect-rx14.onrender.com/api/tasks",
-});
+const baseURL = "https://colledge-connect-rx14.onrender.com/api/tasks";
+const API = axios.create({ baseURL });
 console.log("baseURL:", baseURL);
 
 // Centralize error messages so every component gets a clean, readable
