@@ -1,74 +1,132 @@
-import { useState, useEffect } from "react";
-import API from "../services/api";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Modal from "./Modal";
+import Icon from "./Icon";
 
-function TaskForm({ fetchTasks, editingTask, setEditingTask }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("Pending");
+const STATUSES = ["Pending", "In Progress", "Completed"];
+
+const emptyForm = { title: "", description: "", status: "Pending", dueDate: "" };
+
+// Mongo/JS dates come back as full ISO strings; <input type="date"> only
+// wants the yyyy-mm-dd portion.
+const toDateInputValue = (value) => (value ? value.slice(0, 10) : "");
+
+function TaskForm({ open, onClose, onSubmit, editingTask }) {
+  const [form, setForm] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (editingTask) {
-      setTitle(editingTask.title);
-      setDescription(editingTask.description);
-      setStatus(editingTask.status);
+      setForm({
+        title: editingTask.title,
+        description: editingTask.description || "",
+        status: editingTask.status,
+        dueDate: toDateInputValue(editingTask.dueDate),
+      });
+    } else {
+      setForm(emptyForm);
     }
-  }, [editingTask]);
+  }, [editingTask, open]);
+
+  if (!open) return null;
+
+  const updateField = (field) => (e) =>
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      return alert("Title is required");
+    if (!form.title.trim()) {
+      toast.error("Give the task a title first.");
+      return;
     }
 
-    const task = {
-      title,
-      description,
-      status,
-    };
-
-    if (editingTask) {
-      await API.put(`/${editingTask._id}`, task);
-    } else {
-      await API.post("/", task);
+    setSubmitting(true);
+    try {
+      await onSubmit(form);
+    } finally {
+      setSubmitting(false);
     }
-
-    setTitle("");
-    setDescription("");
-    setStatus("Pending");
-
-    setEditingTask(null);
-
-    fetchTasks();
   };
 
   return (
-    <form onSubmit={submitHandler}>
-      <input
-        placeholder="Task title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+    <Modal onClose={onClose}>
+      <form className="task-form" onSubmit={submitHandler}>
+        <div className="task-form-head">
+          <h2>{editingTask ? "Edit task" : "Pin a new task"}</h2>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <Icon name="x" />
+          </button>
+        </div>
 
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+        <label className="field">
+          <span>Title</span>
+          <input
+            autoFocus
+            placeholder="e.g. Finish DBMS assignment"
+            value={form.title}
+            onChange={updateField("title")}
+          />
+        </label>
 
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-      >
-        <option>Pending</option>
-        <option>In Progress</option>
-        <option>Completed</option>
-      </select>
+        <label className="field">
+          <span>Description</span>
+          <textarea
+            placeholder="Add any notes — what's needed, links, anything to remember"
+            rows={3}
+            value={form.description}
+            onChange={updateField("description")}
+          />
+        </label>
 
-      <button>
-        {editingTask ? "Update Task" : "Add Task"}
-      </button>
-    </form>
+        <div className="field-row">
+          <label className="field">
+            <span>Due date</span>
+            <input
+              type="date"
+              value={form.dueDate}
+              onChange={updateField("dueDate")}
+            />
+          </label>
+
+          <div className="field">
+            <span>Status</span>
+            <div className="status-swatches">
+              {STATUSES.map((status) => (
+                <button
+                  type="button"
+                  key={status}
+                  className={`swatch swatch-${status.replace(/\s/g, "")} ${
+                    form.status === status ? "swatch-active" : ""
+                  }`}
+                  onClick={() => setForm((prev) => ({ ...prev, status }))}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="task-form-actions">
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting
+              ? "Saving…"
+              : editingTask
+              ? "Save changes"
+              : "Pin task"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

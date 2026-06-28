@@ -1,46 +1,529 @@
+/* ---------------------------------------------------------------------
+   Design tokens
+   A campus noticeboard: a wooden-framed corkboard holding hand-pinned
+   sticky notes, one colour per task status. Caveat (handwriting) carries
+   the brand voice in headings; Inter handles everything that needs to
+   stay easy to scan.
+--------------------------------------------------------------------- */
+:root {
+  --cork: #c9a374;
+  --cork-dark: #b88c57;
+  --frame: #6b4226;
+  --frame-dark: #54331d;
+  --ink: #2b2118;
+  --ink-soft: #6b5a48;
+
+  --paper: #fbf8f2;
+
+  --note-pending: #fbe6a2;
+  --note-pending-ink: #6b5413;
+  --note-progress: #bfe3f0;
+  --note-progress-ink: #1c5269;
+  --note-completed: #c3e8c4;
+  --note-completed-ink: #2a5c2c;
+
+  --accent-gold: #d89a3b;
+  --accent-red: #c0463c;
+
+  --shadow-soft: 0 6px 16px rgba(43, 33, 24, 0.18);
+  --shadow-lift: 0 10px 24px rgba(43, 33, 24, 0.28);
+
+  --radius: 10px;
+}
+
+/* ---------------------------------------------------------------------
+   Layout
+--------------------------------------------------------------------- */
 body {
   margin: 0;
-  background: #f4f4f4;
-  font-family: Arial, sans-serif;
+  background: var(--frame-dark);
 }
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 30px;
+.board {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 28px 16px 60px;
 }
 
-h1 {
+.board-frame {
+  width: 100%;
+  max-width: 1080px;
+  background: var(--frame);
+  border-radius: 18px;
+  padding: 18px 18px 28px;
+  box-shadow: var(--shadow-lift), inset 0 0 0 6px var(--frame-dark);
+}
+
+.board-surface {
+  background-color: var(--cork);
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1.4px),
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1.4px);
+  background-size: 18px 18px, 26px 26px;
+  background-position: 0 0, 9px 13px;
+  border-radius: 14px;
+  padding: 24px;
+  min-height: 320px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------------------------------------------------------------------
+   Header
+--------------------------------------------------------------------- */
+.board-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 10px 22px;
+  flex-wrap: wrap;
+}
+
+.tape-sign {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.tape {
+  display: none;
+}
+
+.tape-sign h1 {
+  font-family: "Caveat", cursive;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--paper);
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.tape-sign::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  width: 86px;
+  height: 22px;
+  background: rgba(216, 154, 59, 0.85);
+  transform: rotate(-3deg);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.tagline {
+  margin: 4px 0 0;
+  color: rgba(251, 248, 242, 0.78);
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------------------
+   Buttons
+--------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent-gold);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+  background: #e2a847;
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--paper);
+  border: 1.5px solid rgba(251, 248, 242, 0.45);
+}
+
+.btn-ghost:hover {
+  background: rgba(251, 248, 242, 0.1);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: rgba(43, 33, 24, 0.08);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(43, 33, 24, 0.16);
+  color: var(--ink);
+}
+
+.icon-btn-danger:hover {
+  background: rgba(192, 70, 60, 0.18);
+  color: var(--accent-red);
+}
+
+/* ---------------------------------------------------------------------
+   Filter tabs
+--------------------------------------------------------------------- */
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 10px 16px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: rgba(251, 248, 242, 0.14);
+  color: rgba(251, 248, 242, 0.85);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tab:hover {
+  background: rgba(251, 248, 242, 0.22);
+}
+
+.tab-active {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.tab-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  padding: 1px 7px;
+  min-width: 18px;
   text-align: center;
 }
 
-form {
+.tab-active .tab-count {
+  background: rgba(43, 33, 24, 0.12);
+}
+
+/* ---------------------------------------------------------------------
+   Board grid + sticky notes
+--------------------------------------------------------------------- */
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 26px 22px;
+}
+
+.sticky-note {
+  position: relative;
+  background: var(--paper);
+  border-radius: 4px;
+  padding: 26px 18px 16px;
+  box-shadow: var(--shadow-soft);
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  min-height: 150px;
+}
+
+.sticky-note:hover {
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow: var(--shadow-lift);
+  z-index: 2;
+}
+
+.sticky-note.note-pending {
+  background: var(--note-pending);
+  color: var(--note-pending-ink);
+}
+
+.sticky-note.note-progress {
+  background: var(--note-progress);
+  color: var(--note-progress-ink);
+}
+
+.sticky-note.note-completed {
+  background: var(--note-completed);
+  color: var(--note-completed-ink);
+}
+
+.note-pin {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent-red);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+.note-title {
+  font-family: "Caveat", cursive;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.note-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.85;
+  word-break: break-word;
+  flex: 1;
+}
+
+.note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.note-status {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.note-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.8;
+}
+
+.note-due-overdue {
+  color: var(--accent-red);
+  opacity: 1;
+}
+
+.note-actions {
+  display: flex;
+  gap: 6px;
+  align-self: flex-end;
+  margin-top: -4px;
+}
+
+/* ---------------------------------------------------------------------
+   Empty / loading / error states
+--------------------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
-  margin-bottom: 30px;
+  padding: 60px 20px;
+  color: rgba(43, 33, 24, 0.6);
+  text-align: center;
 }
 
-input,
-textarea,
-select {
-  padding: 12px;
-  font-size: 16px;
+.board-status {
+  text-align: center;
+  padding: 50px 20px;
+  color: rgba(43, 33, 24, 0.7);
+  font-weight: 500;
 }
 
-button {
-  padding: 12px;
-  cursor: pointer;
+.board-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
-.card {
-  background: white;
+/* ---------------------------------------------------------------------
+   Modal + form ("index card" being pinned)
+--------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 8, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
-  margin: 15px 0;
-  border-radius: 8px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, .1);
+  z-index: 50;
 }
 
-.card button {
-  margin-right: 10px;
+.modal-card {
+  background: var(--paper);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lift);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px 24px;
+}
+
+.task-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-form-head h2 {
+  font-family: "Caveat", cursive;
+  font-size: 26px;
+  margin: 0;
+  color: var(--ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.field>span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field input,
+.field textarea {
+  font: inherit;
+  font-size: 14.5px;
+  padding: 10px 12px;
+  border: 1.5px solid #e3d9c8;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.field-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.status-swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.swatch-active {
+  opacity: 1;
+  border-color: var(--ink);
+}
+
+.swatch-Pending {
+  background: var(--note-pending);
+}
+
+.swatch-InProgress {
+  background: var(--note-progress);
+}
+
+.swatch-Completed {
+  background: var(--note-completed);
+}
+
+.task-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   Responsive
+--------------------------------------------------------------------- */
+@media (max-width: 560px) {
+  .tape-sign h1 {
+    font-size: 34px;
+  }
+
+  .board-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-header .btn-primary {
+    justify-content: center;
+  }
+
+  .field-row {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .sticky-note,
+  .btn {
+    transition: none;
+  }
 }
